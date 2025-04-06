@@ -1,5 +1,6 @@
 package com.javaweb.repository.impl;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.utils.ConnectionUtil;
@@ -19,95 +21,130 @@ import com.javaweb.utils.StringUtils;
 
 @Repository
 public class BuildingRepositoryImpl implements BuildingRepository {
-	
-	public void queryJoin(Map<String, String> params, List<String> typeCode, StringBuilder join) {
-		String staffid = params.get("staffid");
-		if (StringUtils.checkData(staffid)) {
+
+	public void queryJoin(BuildingSearchBuilder builder, StringBuilder join) {
+		Long staffid = builder.getStaffId();
+		if (staffid != null) {
 			join.append(" JOIN assignmentbuilding as ON b.id = as.buildingid");
 		}
 
-		String rentAreaFrom = params.get("rentAreaFrom");
-		String rentAreaTo = params.get("rentAreaTo");
-		if (StringUtils.checkData(rentAreaFrom) || StringUtils.checkData(rentAreaTo)) {
-			join.append(" JOIN rentarea rt ON b.id = rt.buildingid");
+		Long rentAreaFrom = builder.getRentAreaFrom();
+		Long rentAreaTo = builder.getRentAreaTo();
+		if (rentAreaFrom != null || rentAreaTo != null) {
+			join.append(" JOIN rentarea ra ON b.id = ra.buildingid");
 		}
 
-		if (typeCode != null && !typeCode.isEmpty()) {
+		if (builder.getTypeCode() != null && !builder.getTypeCode().isEmpty()) {
 			join.append(" JOIN buildingrenttype ON buildingrenttype.buildingid = b.id");
 			join.append(" JOIN renttype ON renttype.id = buildingrenttype.renttypeid");
 		}
 	}
 
-	public void querySqlNomal(Map<String, String> params, StringBuilder where) {
-		for (Map.Entry<String, String> item : params.entrySet()) {
-			// Duyệt qua từng phần tử trong params bằng cách sử dụng entrySet(),
-			// giúp lấy cả key và value trong mỗi lần lặp.
-			String key = item.getKey(); // Lấy tên khóa (key) của phần tử hiện tại trong params.
-			if (!key.equals("staffid") && !key.equals("typeCode") && !key.startsWith("rentArea")
-					&& !key.startsWith("rentPrice")) {
-				String value = item.getValue().toString();
-				if (NumberUtil.isNumber(value) == true) {
-					where.append(" AND b." + key.toLowerCase() + " = " + value);
-				} else {
-					where.append(" AND b." + key.toLowerCase() + " LIKE '%" + value + "%'");
+	public void querySqlNomal(BuildingSearchBuilder builder, StringBuilder where) {
+//		for (Map.Entry<String, String> item : params.entrySet()) {
+//			// Duyệt qua từng phần tử trong params bằng cách sử dụng entrySet(),
+//			// giúp lấy cả key và value trong mỗi lần lặp.
+//			String key = item.getKey(); // Lấy tên khóa (key) của phần tử hiện tại trong params.
+//			if (!key.equals("staffid") && !key.equals("typeCode") && !key.startsWith("rentArea")
+//					&& !key.startsWith("rentPrice")) {
+//				String value = item.getValue().toString();
+//				if (NumberUtil.isNumber(value) == true) {
+//					where.append(" AND b." + key.toLowerCase() + " = " + value);
+//				} else {
+//					where.append(" AND b." + key.toLowerCase() + " LIKE '%" + value + "%'");
+//				}
+//			}
+//
+//		}
+
+		try {
+			Field[] fields = BuildingSearchBuilder.class.getDeclaredFields(); // Lay ten cua cac field cua obj dua vao 1
+																				// mang
+			for (Field item : fields) {
+				item.setAccessible(true);
+				String fileName = item.getName();
+				if (!fileName.equals("staffid") && !fileName.equals("typeCode") && !fileName.startsWith("rentArea")
+						&& !fileName.startsWith("rentPrice")) {
+                     Object value = item.get(builder);
+                     if(value != null) {
+                    	 if(item.getType().getName().equals("java.lang.Long") || item.getType().getName().equals("java.lang.Interger")) {
+                    		 where.append(" AND b." + fileName.toLowerCase() + " = " + value);
+                    	 }else if(item.getType().getName().equals("java.lang.String")) {
+                    		 where.append(" AND b." + fileName.toLowerCase() + " LIKE '%" + value + "%'");
+                    	 }
+                     }
 				}
 			}
-
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+
 	}
 
-	public void querySqlSpecial(Map<String, String> params, List<String> TypeCode, StringBuilder where) {
-		String rentAreaFrom = params.get("rentAreaFrom");
-		String rentAreaTo = params.get("rentAreaTo");
-		if (StringUtils.checkData(rentAreaFrom) || StringUtils.checkData(rentAreaTo)) {
-			if (StringUtils.checkData(rentAreaFrom)) {
-				where.append(" AND rt.value >=" + rentAreaFrom);
+	public void querySqlSpecial(BuildingSearchBuilder builder, StringBuilder where) {
+		Long rentAreaFrom = builder.getRentAreaFrom();
+		Long rentAreaTo = builder.getRentAreaTo();
+		if (rentAreaFrom != null || rentAreaTo != null) {
+			where.append(" AND EXISTS ( SELECT * FROM rentarea rt WHERE b.id = rt.buildingid ");
+			if (rentAreaFrom != null) {
+				where.append(" AND ra.value >=" + rentAreaFrom);
 			}
-			if (StringUtils.checkData(rentAreaTo)) {
-				where.append(" AND rt.value <=" + rentAreaTo);
+			if (rentAreaTo != null) {
+				where.append(" AND ra.value <=" + rentAreaTo);
 			}
+			where.append(" )");
 		}
-		String staffid = params.get("staffid");
-		if (StringUtils.checkData(staffid)) {
+		Long staffid = builder.getStaffId();
+		if (staffid != null) {
 			where.append(" AND as.staffId " + staffid);
 		}
 
-		String rentPriceFrom = params.get("rentPriceFrom");
-		String rentPriceTo = params.get("rentPriceTo");
-		if (StringUtils.checkData(rentPriceFrom) || StringUtils.checkData(rentPriceTo)) {
-			if (StringUtils.checkData(rentPriceFrom)) {
+		Long rentPriceFrom = builder.getRentPriceFrom();
+		Long rentPriceTo = builder.getRentPriceTo();
+		if (rentPriceFrom != null || rentPriceTo != null) {
+			if (rentPriceFrom != null) {
 				where.append(" AND b.rentprice >=" + rentPriceFrom);
 			}
-			if (StringUtils.checkData(rentPriceTo)) {
+			if (rentPriceTo != null) {
 				where.append(" AND b.rentprice <=" + rentPriceTo);
 			}
 		}
 
+		// java 7
+//		if (typeCode != null && !typeCode.isEmpty()) {
+//		List<String> code = new ArrayList<String>();
+//		for (String it : typeCode) {
+//			code.add("'" + it + "'"); // IN('tang-tret','nguyen-can')
+//		}
+//		where.append(" AND renttype.code IN (" + String.join(",", code) + ") ");
+//	}
+
 		// java 8
-		if (TypeCode != null && !TypeCode.isEmpty()) {
+		List<String> typeCode = builder.getTypeCode();
+		if (typeCode != null && !typeCode.isEmpty()) {
 			where.append(" AND (");
-			where.append(TypeCode.stream().map(item -> "renttype.code LIKE '%" + item + "%'")
+			where.append(typeCode.stream().map(item -> "renttype.code LIKE '%" + item + "%'")
 					.collect(Collectors.joining(" OR ")));
 			where.append(" ) ");
 		}
 	}
 
 	@Override
-	public List<BuildingEntity> findAll(Map<String, String> params, List<String> typeCode) {
+	public List<BuildingEntity> findAll(BuildingSearchBuilder builder) {
 		List<BuildingEntity> buildings = new ArrayList<BuildingEntity>();
 
 		StringBuilder sql = new StringBuilder(" SELECT b.* FROM building b ");
 		StringBuilder where = new StringBuilder(" WHERE 1=1 ");
-		queryJoin(params, typeCode, sql);
-		querySqlNomal(params, where);
-		querySqlSpecial(params, typeCode, where);
+		queryJoin(builder, sql);
+		querySqlNomal(builder, where);
+		querySqlSpecial(builder, where);
 		sql.append(where).append(" GROUP BY b.id");
 
-		try ( Connection conn = ConnectionUtil.getConnection();
+		try (Connection conn = ConnectionUtil.getConnection();
 				Statement stm = conn.createStatement();
 				ResultSet rs = stm.executeQuery(sql.toString())) {
-            
-			while(rs.next()) {
+
+			while (rs.next()) {
 				BuildingEntity buildingEntity = new BuildingEntity();
 				buildingEntity.setId(rs.getLong("id"));
 				buildingEntity.setName(rs.getString("name"));
@@ -118,7 +155,7 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 				buildingEntity.setWard(rs.getString("ward"));
 				buildings.add(buildingEntity);
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Connected database failed...");
