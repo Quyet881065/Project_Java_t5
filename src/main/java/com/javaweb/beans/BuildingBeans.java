@@ -3,13 +3,38 @@ package com.javaweb.beans;
 import java.util.List;
 
 public class BuildingBeans {
+	private Long id;
 	 private String name ;
 	    private String ward;
 	    private Long numberOfBasement;
 	    private Long rentPrice;
-	    private List<String> typeCode;
+	    private Long districtId;
+	    private String street;
+	   // private List<String> typeCode;
+	    
+	    
+	    
+	    
 		public String getName() {
 			return name;
+		}
+		public Long getId() {
+			return id;
+		}
+		public void setId(Long id) {
+			this.id = id;
+		}
+		public String getStreet() {
+			return street;
+		}
+		public void setStreet(String street) {
+			this.street = street;
+		}
+		public Long getDistrictId() {
+			return districtId;
+		}
+		public void setDistrictId(Long districtId) {
+			this.districtId = districtId;
 		}
 		public void setName(String name) {
 			this.name = name;
@@ -32,12 +57,12 @@ public class BuildingBeans {
 		public void setRentPrice(Long rentPrice) {
 			this.rentPrice = rentPrice;
 		}
-		public List<String> getTypeCode() {
-			return typeCode;
-		}
-		public void setTypeCode(List<String> typeCode) {
-			this.typeCode = typeCode;
-		}
+//		public List<String> getTypeCode() {
+//			return typeCode;
+//		}
+//		public void setTypeCode(List<String> typeCode) {
+//			this.typeCode = typeCode;
+//		}
 	    
 	    
 }

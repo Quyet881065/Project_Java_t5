@@ -1,13 +1,60 @@
 package com.javaweb.repository.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "building")
 public class BuildingEntity {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(name = "name")
 	private String name;
+	@Column(name = "ward")
 	private String ward;
+	@Column(name = "street")
 	private String street;
-	private Long districtId;
+//	@Column(name = "districtid")
+//	private Long districtId;
+	@Column(name = "rentprice")
 	private Long rentPrice;
+	@Column(name = "numberofbasement")
 	private Long numberOfBasement;
+	
+	@ManyToOne  // fetch mac dinh la EAGER
+	@JoinColumn(name = "districtid") 
+	private DistrictEntity district;
+	
+	@OneToMany(mappedBy = "buildingEntity", fetch = FetchType.LAZY)
+	List<RentAreaEntity> rentAreas = new ArrayList<RentAreaEntity>();
+	
+	
+	
+	
+	public DistrictEntity getDistrict() {
+		return district;
+	}
+	public void setDistrict(DistrictEntity district) {
+		this.district = district;
+	}
+	public List<RentAreaEntity> getRentAreas() {
+		return rentAreas;
+	}
+	public void setRentAreas(List<RentAreaEntity> rentAreas) {
+		this.rentAreas = rentAreas;
+	}
 	public Long getId() {
 		return id;
 	}
@@ -32,12 +79,7 @@ public class BuildingEntity {
 	public void setStreet(String street) {
 		this.street = street;
 	}
-	public Long getDistrictId() {
-		return districtId;
-	}
-	public void setDistrictId(Long districtId) {
-		this.districtId = districtId;
-	}
+
 	public Long getRentPrice() {
 		return rentPrice;
 	}

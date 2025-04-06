@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import com.javaweb.builder.BuildingSearchBuilder;
@@ -20,7 +25,11 @@ import com.javaweb.utils.NumberUtil;
 import com.javaweb.utils.StringUtils;
 
 @Repository
+@Primary
 public class BuildingRepositoryImpl implements BuildingRepository {
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	public void queryJoin(BuildingSearchBuilder builder, StringBuilder join) {
 		Long staffid = builder.getStaffId();
@@ -131,36 +140,15 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 
 	@Override
 	public List<BuildingEntity> findAll(BuildingSearchBuilder builder) {
-		List<BuildingEntity> buildings = new ArrayList<BuildingEntity>();
-
+		//List<BuildingEntity> buildings = new ArrayList<BuildingEntity>();
 		StringBuilder sql = new StringBuilder(" SELECT b.* FROM building b ");
 		StringBuilder where = new StringBuilder(" WHERE 1=1 ");
 		queryJoin(builder, sql);
 		querySqlNomal(builder, where);
 		querySqlSpecial(builder, where);
 		sql.append(where).append(" GROUP BY b.id");
-
-		try (Connection conn = ConnectionUtil.getConnection();
-				Statement stm = conn.createStatement();
-				ResultSet rs = stm.executeQuery(sql.toString())) {
-
-			while (rs.next()) {
-				BuildingEntity buildingEntity = new BuildingEntity();
-				buildingEntity.setId(rs.getLong("id"));
-				buildingEntity.setName(rs.getString("name"));
-				buildingEntity.setNumberOfBasement(rs.getLong("numberofbasement"));
-				buildingEntity.setDistrictId(rs.getLong("districtid"));
-				buildingEntity.setRentPrice(rs.getLong("rentprice"));
-				buildingEntity.setStreet(rs.getString("street"));
-				buildingEntity.setWard(rs.getString("ward"));
-				buildings.add(buildingEntity);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Connected database failed...");
-		}
-		return buildings;
+        Query query = entityManager.createNativeQuery(sql.toString(), BuildingEntity.class);
+		return query.getResultList();
 	}
 
 }

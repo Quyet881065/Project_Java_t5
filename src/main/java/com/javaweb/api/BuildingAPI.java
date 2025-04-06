@@ -3,6 +3,10 @@ package com.javaweb.api;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -18,11 +22,13 @@ import com.javaweb.beans.response.BuildingResponseDTO;
 import com.javaweb.customexceptions.InvalidDataException;
 import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.entity.BuildingEntity;
+import com.javaweb.repository.entity.DistrictEntity;
 import com.javaweb.service.BuildingService;
 
 @RestController // một annotation trong Spring Framework, được sử dụng để đánh dấu một class là
 // một RESTful web service controller
 @PropertySource("classpath:application.properties")
+@Transactional
 public class BuildingAPI {
 	
 	@Value("${dev.nguyen}")
@@ -49,10 +55,35 @@ public class BuildingAPI {
 		}
 	}
 	
+	@PersistenceContext
+	private EntityManager entityManager;
+//	@PostMapping(value = "/api/buildings")
+//	public void createBuilding(@RequestBody BuildingBeans building) throws InvalidDataException {
+//		validate(building);
+//		BuildingEntity buildingEntity = new BuildingEntity();
+//		buildingEntity.setName(building.getName());
+//		buildingEntity.setStreet(building.getStreet());
+//		buildingEntity.setWard(building.getWard());
+//		buildingEntity.setRentPrice(building.getRentPrice());
+//		DistrictEntity districtEntity = entityManager.find(DistrictEntity.class, building.getDistrictId());
+//		buildingEntity.setDistrict(districtEntity);
+//		entityManager.persist(buildingEntity);
+//	}
+	
 	@PostMapping(value = "/api/buildings")
-	private Object createBuilding(@RequestBody BuildingBeans building) throws InvalidDataException {
+	public void createUpdateBuilding(@RequestBody BuildingBeans building) throws InvalidDataException {
 		validate(building);
-	    return building;
+		BuildingEntity buildingEntity = new BuildingEntity();
+		if(building != null) {
+			buildingEntity = entityManager.find(BuildingEntity.class, building.getId());
+		}
+		buildingEntity.setName(building.getName());
+		buildingEntity.setStreet(building.getStreet());
+		buildingEntity.setWard(building.getWard());
+		buildingEntity.setRentPrice(building.getRentPrice());
+		DistrictEntity districtEntity = entityManager.find(DistrictEntity.class, building.getDistrictId());
+		buildingEntity.setDistrict(districtEntity);
+		entityManager.merge(buildingEntity);
 	}
 
 }
