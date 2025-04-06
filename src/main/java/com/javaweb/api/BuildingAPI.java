@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +22,11 @@ import com.javaweb.service.BuildingService;
 
 @RestController // một annotation trong Spring Framework, được sử dụng để đánh dấu một class là
 // một RESTful web service controller
+@PropertySource("classpath:application.properties")
 public class BuildingAPI {
+	
+	@Value("${dev.nguyen}")
+	private String tmp;
 
 	@Autowired // Giup tim interface , hay cung cap ham khoi tao cho interface
 	BuildingService buildingService;
@@ -30,6 +36,8 @@ public class BuildingAPI {
 	private Object getBuilding(@RequestParam Map<String, String> params,
 			@RequestParam(name = "typeCode", required = false) List<String> typeCode) {
 
+		System.out.print(tmp);
+		
        //List<BuildingEntity> results = buildingRepository.findAll(params, typeCode);
 		List<BuildingResponseDTO> results = buildingService.findAll(params, typeCode);
 		return results;
