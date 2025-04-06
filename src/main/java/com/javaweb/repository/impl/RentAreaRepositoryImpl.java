@@ -11,18 +11,16 @@ import org.springframework.stereotype.Repository;
 
 import com.javaweb.repository.RentAreaRepository;
 import com.javaweb.repository.entity.RentAreaEntity;
+import com.javaweb.utils.ConnectionUtil;
 
 @Repository
 public class RentAreaRepositoryImpl implements RentAreaRepository {
-	static final String DB_URL = "jdbc:mysql://localhost:3306/estatebasic";
-	static final String USER = "root";
-	static final String PASS = "123456";
-
+	
 	@Override
 	public List<RentAreaEntity> findByBuildingId(Long buildingid) {
 		String sql = " SELECT * FROM rentarea WHERE rentarea.buildingid = " + buildingid;
 		List<RentAreaEntity> rentArea = new ArrayList<RentAreaEntity>();
-		try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+		try (Connection conn = ConnectionUtil.getConnection();
 				Statement stm = conn.createStatement();
 				ResultSet rs = stm.executeQuery(sql)) {
               while(rs.next()) {

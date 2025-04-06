@@ -13,15 +13,13 @@ import org.springframework.stereotype.Repository;
 
 import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.entity.BuildingEntity;
+import com.javaweb.utils.ConnectionUtil;
 import com.javaweb.utils.NumberUtil;
 import com.javaweb.utils.StringUtils;
 
 @Repository
 public class BuildingRepositoryImpl implements BuildingRepository {
-	static final String DB_URL = "jdbc:mysql://localhost:3306/estatebasic";
-	static final String USER = "root";
-	static final String PASS = "123456";
-
+	
 	public void queryJoin(Map<String, String> params, List<String> typeCode, StringBuilder join) {
 		String staffid = params.get("staffid");
 		if (StringUtils.checkData(staffid)) {
@@ -45,7 +43,7 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 			// Duyệt qua từng phần tử trong params bằng cách sử dụng entrySet(),
 			// giúp lấy cả key và value trong mỗi lần lặp.
 			String key = item.getKey(); // Lấy tên khóa (key) của phần tử hiện tại trong params.
-			if (!key.equals("staffid") && !key.equals("typecode") && !key.startsWith("rentArea")
+			if (!key.equals("staffid") && !key.equals("typeCode") && !key.startsWith("rentArea")
 					&& !key.startsWith("rentPrice")) {
 				String value = item.getValue().toString();
 				if (NumberUtil.isNumber(value) == true) {
@@ -105,7 +103,7 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 		querySqlSpecial(params, typeCode, where);
 		sql.append(where).append(" GROUP BY b.id");
 
-		try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+		try ( Connection conn = ConnectionUtil.getConnection();
 				Statement stm = conn.createStatement();
 				ResultSet rs = stm.executeQuery(sql.toString())) {
             
