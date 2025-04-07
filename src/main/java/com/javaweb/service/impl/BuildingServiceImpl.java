@@ -25,40 +25,39 @@ import com.javaweb.service.BuildingService;
 public class BuildingServiceImpl implements BuildingService {
 	// Tim kiem interface BuildingRepository va inject(tiem) cac phuong thuc .Vi
 	// interface khong dung de khoi tao doi tuong
-	@Autowired
-	BuildingRepository buildingRepository;
-
-	@Autowired
-	BuildingConverter buildingConverter;
-
-	@Autowired
-	private BuildingSearchBuilderConverter buildingSearchBuilderConverter;
-	
-	@Autowired
-	BuildingConverter1 buildingConverter1;
-	
-	@PersistenceContext 
+	@PersistenceContext
 	private EntityManager entityManager;
 
+	@Autowired // Tim kiem interface BuildingRepository va inject(tiem) cac phuong thuc .Vi
+				// interface khong dung de khoi tao doi tuong
+	private BuildingRepository buildingRepository;
+	@Autowired
+	private BuildingConverter buildingConverter;
+	@Autowired
+	private BuildingConverter1 buildingConverter1;
+	@Autowired
+	private BuildingSearchBuilderConverter buildingSearchBuilderConverter;
+
 	@Override
-	public List<BuildingResponseDTO> findAll(Map<String, String> params, List<String> typeCode) {
+	public List<BuildingResponseDTO> findAll(Map<String, Object> params, List<String> typeCode) {
 		BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
-		List<BuildingEntity> buildingEntity = buildingRepository.findAll(builder);
-		List<BuildingResponseDTO> result = new ArrayList<BuildingResponseDTO>();
-		for (BuildingEntity it : buildingEntity) {
-			BuildingResponseDTO buildingResponse = buildingConverter.buildingResponseDTO(it);
-			result.add(buildingResponse);
+		List<BuildingEntity> buildingEntitys = buildingRepository.findAll(builder);
+		List<BuildingResponseDTO> results = new ArrayList<BuildingResponseDTO>();
+		for (BuildingEntity it : buildingEntitys) { // filter
+			BuildingResponseDTO buildingResponseDTO = buildingConverter.buildingResponseDTO(it);
+			
+			results.add(buildingResponseDTO);
 		}
-		return result;
+		return results;
 	}
 
 	@Override
-	public BuildingEntity createBuilding(BuildingBeans buildingBean) {
-		//List<BuildingEntity> buildingEntitys = new ArrayList<BuildingEntity>();
-		BuildingEntity buildingEntity = buildingConverter1.building(buildingBean);
+	public BuildingEntity createOrUpdateBuilding(BuildingBeans buildingBean) {
+//		List<BuildingEntity> buildingEntity = new ArrayList<BuildingEntity>();
+		BuildingEntity buildingEntity = buildingConverter1.buildingEntity(buildingBean);
 		DistrictEntity districtEntity = entityManager.find(DistrictEntity.class, buildingBean.getDistrictId());
 		buildingEntity.setDistrict(districtEntity);
-		entityManager.persist(buildingEntity);
+		entityManager.persist(buildingEntity); 
 		return buildingEntity;
 	}
 

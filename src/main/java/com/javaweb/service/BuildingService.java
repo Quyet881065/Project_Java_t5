@@ -8,7 +8,6 @@ import com.javaweb.beans.response.BuildingResponseDTO;
 import com.javaweb.repository.entity.BuildingEntity;
 
 public interface BuildingService {
-   List<BuildingResponseDTO> findAll(Map<String, String> params, List<String> typeCode);
-   
-   BuildingEntity createBuilding(BuildingBeans buildingBean);
+	List<BuildingResponseDTO> findAll(Map<String, Object> params , List<String> typeCode);
+	BuildingEntity createOrUpdateBuilding(BuildingBeans buildingBean);
 }

@@ -11,7 +11,7 @@ import com.javaweb.repository.entity.BuildingEntity;
 public class BuildingConverter1 {
    @Autowired
    ModelMapper modelMapper;
-   public BuildingEntity building(BuildingBeans buildingBean) {
+   public BuildingEntity  buildingEntity(BuildingBeans buildingBean) {
 	   BuildingEntity buildingEntity = modelMapper.map(buildingBean, BuildingEntity.class);
 	   return buildingEntity;
    }

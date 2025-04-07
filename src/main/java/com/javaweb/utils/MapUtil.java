@@ -2,8 +2,8 @@ package com.javaweb.utils;
 
 import java.util.Map;
 
-public class MapUtils {
-    public static<T> T getObject(Map<String, String> params , String key , Class<T> tClass) {
+public class MapUtil {
+    public static<T> T getObject(Map<String, Object> params , String key , Class<T> tClass) {
     // Đây là một phương thức generic (dùng <T>) có thể trả về bất kỳ kiểu dữ liệu nào bạn muốn.
     // params: một Map chứa các giá trị key-value.
     // key: khóa để lấy giá trị từ Map.

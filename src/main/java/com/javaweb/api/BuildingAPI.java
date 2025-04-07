@@ -28,28 +28,26 @@ import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.repository.entity.DistrictEntity;
 import com.javaweb.service.BuildingService;
 
-// một RESTful web service controller
+@RestController
 @PropertySource("classpath:application.properties")
-@Transactional
-@RestController // một annotation trong Spring Framework, được sử dụng để đánh dấu một class là
+@Transactional  //Đảm bảo tính transactional
+// một annotation trong Spring Framework, được sử dụng để đánh dấu một class là
+// một RESTful web service controller
 public class BuildingAPI {
+
+	@Autowired
+	private BuildingService buildingService;  
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Value("${dev.nguyen}")
 	private String tmp;
-
-	@Autowired // Giup tim interface , hay cung cap ham khoi tao cho interface
-	BuildingService buildingService;
-
 	@GetMapping(value = "/api/buildings")
-	@ResponseBody // Chuyen doi data(beans, list, map) tu server tra ra cho client thanh JSON
-	private Object getBuilding(@RequestParam Map<String, String> params,
-			@RequestParam(name = "typeCode", required = false) List<String> typeCode) {
-
-		System.out.print(tmp);
-
-		// List<BuildingEntity> results = buildingRepository.findAll(params, typeCode);
-		List<BuildingResponseDTO> results = buildingService.findAll(params, typeCode);
-		return results;
+	public Object getBuildings( @RequestParam Map<String,Object> params,
+			                     @RequestParam (name="typeCode", required= false) List<String> typeCode) {  
+		System.out.println(tmp);
+		List<BuildingResponseDTO> result = buildingService.findAll(params, typeCode);  
+		return result;
 	}
 
 	private void validate(BuildingBeans buildingBeans) throws InvalidDataException {
