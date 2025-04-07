@@ -3,6 +3,7 @@ package com.javaweb.api;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -10,7 +11,9 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,12 +28,12 @@ import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.repository.entity.DistrictEntity;
 import com.javaweb.service.BuildingService;
 
-@RestController // một annotation trong Spring Framework, được sử dụng để đánh dấu một class là
 // một RESTful web service controller
 @PropertySource("classpath:application.properties")
 @Transactional
+@RestController // một annotation trong Spring Framework, được sử dụng để đánh dấu một class là
 public class BuildingAPI {
-	
+
 	@Value("${dev.nguyen}")
 	private String tmp;
 
@@ -43,20 +46,25 @@ public class BuildingAPI {
 			@RequestParam(name = "typeCode", required = false) List<String> typeCode) {
 
 		System.out.print(tmp);
-		
-       //List<BuildingEntity> results = buildingRepository.findAll(params, typeCode);
+
+		// List<BuildingEntity> results = buildingRepository.findAll(params, typeCode);
 		List<BuildingResponseDTO> results = buildingService.findAll(params, typeCode);
 		return results;
 	}
-	
+
 	private void validate(BuildingBeans buildingBeans) throws InvalidDataException {
-		if(buildingBeans.getName() == null || buildingBeans.getName().equals("")) {
+		if (buildingBeans.getName() == null || buildingBeans.getName().equals("")) {
 			throw new InvalidDataException("Building name is required.");
 		}
 	}
 	
-	@PersistenceContext
-	private EntityManager entityManager;
+	@PostConstruct
+	public void init() {
+	    System.out.println(">>> BUILDING SERVICE: " + buildingService);
+	}
+
+//	@PersistenceContext
+//	private EntityManager entityManager;
 //	@PostMapping(value = "/api/buildings")
 //	public void createBuilding(@RequestBody BuildingBeans building) throws InvalidDataException {
 //		validate(building);
@@ -69,21 +77,35 @@ public class BuildingAPI {
 //		buildingEntity.setDistrict(districtEntity);
 //		entityManager.persist(buildingEntity);
 //	}
+
+//	@PostMapping(value = "/api/buildings")
+//	public void createUpdateBuilding(@RequestBody BuildingBeans building) throws InvalidDataException {
+//		validate(building);
+//		BuildingEntity buildingEntity = new BuildingEntity();
+//		if (building != null) {
+//			buildingEntity = entityManager.find(BuildingEntity.class, building.getId());
+//		}
+//		buildingEntity.setName(building.getName());
+//		buildingEntity.setStreet(building.getStreet());
+//		buildingEntity.setWard(building.getWard());
+//		buildingEntity.setRentPrice(building.getRentPrice());
+//		DistrictEntity districtEntity = entityManager.find(DistrictEntity.class, building.getDistrictId());
+//		buildingEntity.setDistrict(districtEntity);
+//		entityManager.merge(buildingEntity);
+//	}
 	
-	@PostMapping(value = "/api/buildings")
-	public void createUpdateBuilding(@RequestBody BuildingBeans building) throws InvalidDataException {
-		validate(building);
-		BuildingEntity buildingEntity = new BuildingEntity();
-		if(building != null) {
-			buildingEntity = entityManager.find(BuildingEntity.class, building.getId());
-		}
-		buildingEntity.setName(building.getName());
-		buildingEntity.setStreet(building.getStreet());
-		buildingEntity.setWard(building.getWard());
-		buildingEntity.setRentPrice(building.getRentPrice());
-		DistrictEntity districtEntity = entityManager.find(DistrictEntity.class, building.getDistrictId());
-		buildingEntity.setDistrict(districtEntity);
-		entityManager.merge(buildingEntity);
-	}
+//	@PostMapping(value = "/api/buildings")
+//	public Object createBuilding(@RequestBody BuildingBeans buildingBeans) {
+//		BuildingEntity buildingEntity = buildingService.createBuilding(buildingBeans);
+//		return buildingEntity;
+//	}
+//
+//	@DeleteMapping(value = "/api/buildings/{ids}")
+//	public void deleteBuilding(@PathVariable List<Long> ids) {
+//		for (Long id : ids) {
+//			BuildingEntity buildingEntity = entityManager.find(BuildingEntity.class, id);
+//			entityManager.remove(buildingEntity);
+//		}
+//	}
 
 }
