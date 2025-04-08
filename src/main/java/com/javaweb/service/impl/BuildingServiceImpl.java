@@ -42,6 +42,8 @@ public class BuildingServiceImpl implements BuildingService {
 	public List<BuildingResponseDTO> findAll(Map<String, Object> params, List<String> typeCode) {
 		BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
 		List<BuildingEntity> buildingEntitys = buildingRepository.findAll(builder);
+//		List<BuildingEntity> buildingEntitys = buildingRepository.findByNameContainingAndWardContaining("building","phuong");
+		//BuildingEntity buildings = buildingRepository.findById(2L).get();
 		List<BuildingResponseDTO> results = new ArrayList<BuildingResponseDTO>();
 		for (BuildingEntity it : buildingEntitys) { // filter
 			BuildingResponseDTO buildingResponseDTO = buildingConverter.buildingResponseDTO(it);
