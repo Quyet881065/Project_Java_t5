@@ -10,4 +10,8 @@ import com.javaweb.repository.entity.BuildingEntity;
 public interface BuildingService {
 	List<BuildingResponseDTO> findAll(Map<String, Object> params , List<String> typeCode);
 	BuildingEntity createOrUpdateBuilding(BuildingBeans buildingBean);
+	
+	void createBuilding(BuildingBeans buildingBeans);
+	
+	void deleteBuilding(Long[] ids);
 }

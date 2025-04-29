@@ -10,6 +10,7 @@ import com.javaweb.repository.entity.BuildingEntity;
 public interface BuildingRepository extends JpaRepository<BuildingEntity, Long> , BuildingRepositoryCustom {
 	
 	List<BuildingEntity> findByNameContainingAndWardContaining(String  name , String ward);
-	
+	List<BuildingEntity> findByIdIn(List<Long> ids);
+	void deleteByIdIn(Long[] ids);
    //List<BuildingEntity> findAll(BuildingSearchBuilder builder);
 }
